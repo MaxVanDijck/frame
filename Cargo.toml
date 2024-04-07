@@ -1,5 +1,5 @@
 [package]
-name = "frame"
+name = "frm"
 authors = ["Max van Dijck"]
 version = "0.0.1"
 edition = "2021"
