@@ -15,3 +15,6 @@ Cargo
 cargo install frm
 ```
 
+## Why?
+- I can't open Parquet files in Tableau
+- I need to send a file to a non-technical customer
