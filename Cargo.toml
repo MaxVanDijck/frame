@@ -5,6 +5,8 @@ version = "0.0.1"
 edition = "2021"
 description = "Command line tool for quick dataframe operations"
 repository = "https://github.com/MaxVanDijck/frame"
+license = "MIT"
+license-file = "LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
