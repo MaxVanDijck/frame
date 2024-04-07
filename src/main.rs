@@ -1,23 +1,54 @@
 use polars::prelude::*;
 use polars_io::parquet::ParquetReader;
 use polars_io::csv::CsvWriter;
+use std::ffi::OsString;
 use std::fs::File;
+use std::path::PathBuf;
+use clap::{Parser, Subcommand};
+
+#[derive(Parser)]
+#[command(name = "frm")]
+#[command(about = "A columnar filetype conversion tool", long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Convert to csv filetype from parquet
+    Csv {
+        /// Path to file to convert
+        #[arg(value_name = "PATH")]
+        path: std::path::PathBuf,
+        #[arg(value_name = "OUT")]
+        /// Output path to save file to
+        out: Option<OsString>,
+    },
+
+}
 
 fn main() -> std::io::Result<()> {
-    let command = std::env::args().nth(1).expect("no pattern given");
-    let path = std::env::args().nth(2).expect("no path given");
-    println!("pattern: {:?}, path: {:?}", command, path);
+    let args = Cli::parse();
 
-    match command.as_str() {
-        "csv" => convert_parquet_to_csv(&path),
-        _ => Ok(()),
+    match args.command {
+        Commands::Csv { path, out } => convert_to_csv(path, out),
     }
 }
 
-fn convert_parquet_to_csv(path: &str) -> std::io::Result<()> {
-    let mut f = File::open(path)?;
+fn convert_to_csv(path: PathBuf, out: Option<OsString>) -> std::io::Result<()> {
+    let mut f = File::open(&path)?;
     let mut df = ParquetReader::new(&mut f).finish().unwrap();
-    let mut file = std::fs::File::create("test.csv").unwrap();
+    
+    let out_path: OsString = match out {
+        Some(x) => x,
+        None => {
+            let mut path_clone = path.clone(); // Clone the path to avoid borrowing issues
+            path_clone.set_extension("csv"); // Set the extension to .csv
+            path_clone.into_os_string() // Convert PathBuf to OsString
+        },
+    };
+    let mut file = std::fs::File::create(out_path).unwrap();
     CsvWriter::new(&mut file).finish(&mut df).unwrap();
     Ok(())
 }
